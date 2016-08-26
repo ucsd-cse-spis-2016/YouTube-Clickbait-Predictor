@@ -18,12 +18,45 @@ def printAllTitles(rdata):
         #how to print the titles
         for i in range(50):
                 pprint.pprint(rdata['items'][i]['snippet']['title'])
+                
 
+def getVidIds(rdata):
+        ids = []
+        for i in range (50):
+                ids.append(rdata['items'][i]['id']['videoId'])
+        return ids
 
+def getTitleList(rdata):
+        titles = []
+        for i in range (50):
+                titles.append(rdata['items'][i]['snippet']['title'])
+        return titles
 
+def makeStatsDict(idList, titleList):
+        statsDict = {}
+        for i in range(50):
+                tempList ={}
+                result=getVids("https://www.googleapis.com/youtube/v3/videos?part=statistics&id="+idList[i]+"&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU")
+                rdata = makeDict(result)
 
-#def getStatistics(
+                tempList['Likes'] = (rdata['items'][0]['statistics']['likeCount'])
+                tempList['Dislikes'] = (rdata['items'][0]['statistics']['dislikeCount'])
+                tempList['Views'] = (rdata['items'][0]['statistics']['viewCount'])
+                tempList['Disl/View Ratio'] = float(rdata['items'][0]['statistics']['dislikeCount'])/float(rdata['items'][0]['statistics']['viewCount'])
+                
+                statsDict[titleList[i]] = tempList
 
+        return statsDict
+                
+
+        
+
+print "result = getVids('https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&publishedAfter=2014-06-25T00:00:00Z&publishedBefore=2014-07-01T23:59:59Z&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU')"
+print "rdata = makeDict(result)"
+print "titleList = getTitleList(rdata)"
+print "idList = getVidIds(rdata)"
+print "statsDict = makeStatsDict(idList, titleList)"
+        
 #how to get vid id
 #rdata['items'][0]['id']['videoId']
                 
