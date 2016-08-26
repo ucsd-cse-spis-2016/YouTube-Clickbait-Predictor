@@ -42,12 +42,30 @@ def makeStatsDict(idList, titleList):
                 tempList['Likes'] = (rdata['items'][0]['statistics']['likeCount'])
                 tempList['Dislikes'] = (rdata['items'][0]['statistics']['dislikeCount'])
                 tempList['Views'] = (rdata['items'][0]['statistics']['viewCount'])
-                tempList['Disl/View Ratio'] = float(rdata['items'][0]['statistics']['dislikeCount'])/float(rdata['items'][0]['statistics']['viewCount'])
+
+                likes = float(rdata['items'][0]['statistics']['likeCount'])
+                dislikes = float(rdata['items'][0]['statistics']['dislikeCount'])
+                views = float(rdata['items'][0]['statistics']['viewCount'])
+                
+                tempList['CBRatio'] = ((dislikes - likes)/(likes + dislikes)) / views
                 
                 statsDict[titleList[i]] = tempList
 
         return statsDict
+
+def makeCBList(statsDict):
+        CBList = []
+        titleList = statsDict.keys()
+        for i in range (len(titleList)):
+                tempList = []
+
+                tempList.append(statsDict[titleList[i]]['CBRatio'])
+                tempList.append(titleList[i])
                 
+                CBList.append(tempList)
+        return CBList
+                
+        
 
         
 
