@@ -19,3 +19,13 @@ def printAllTitles(rdata):
         for i in range(50):
                 pprint.pprint(rdata['items'][i]['snippet']['title'])
 
+
+
+
+#def getStatistics(
+
+#how to get vid id
+#rdata['items'][0]['id']['videoId']
+                
+#get stats link
+#https://www.googleapis.com/youtube/v3/videos?part=statistics&id=dl7CLaZFG1c&key=AIzaSyDnYJlcS_O0hzFRVvMdR2Cy
