@@ -9,21 +9,42 @@ def getVids(link):
         result = requests.get(link)
         return result
 
+linkPt1 = "https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&publishedAfter=2014-06-25T00:00:00Z&"
+linkPt2= "&publishedBefore=2014-07-01T23:59:59Z&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU"
+def getNextVids(rdata):
+        link = linkPt1 + "pageToken=" + str(rdata['nextPageToken']) + linkPt2
+        result = getVids(link)
+        newData = makeDict(result)
+        return newData
+
+def combineAllRdata(rdata, numPages):
+        newData = []
+        tempData = {}
+        for i in range(numPages):
+                if i == 0:
+                        newData.append(rdata)
+                        tempData = rdata
+                else:
+                        tempData = getNextVids(tempData)
+                        newData.append(tempData)
+        return newData
+
+        
 def makeDict(result):
         #makes into a dict
         rdata = json.loads(result.text)
         return rdata
 
-def printAllTitles(rdata):
-        #how to print the titles
-        for i in range(50):
-                pprint.pprint(rdata['items'][i]['snippet']['title'])
-                
-
 def getVidIds(rdata):
         ids = []
         for i in range (50):
                 ids.append(rdata['items'][i]['id']['videoId'])
+        return ids
+
+def getAllVidIds(dictList):
+        ids = []
+        for i in range(len(dictList)):
+                ids = ids + getVidIds(dictList[i])
         return ids
 
 def getTitleList(rdata):
@@ -32,9 +53,15 @@ def getTitleList(rdata):
                 titles.append(rdata['items'][i]['snippet']['title'])
         return titles
 
+def getAllTitles(dictList):
+        titles = []
+        for i in range(len(dictList)):
+                titles = titles + getTitleList(dictList[i])
+        return titles
+
 def makeStatsDict(idList, titleList):
         statsDict = {}
-        for i in range(50):
+        for i in range(len(idList)):
                 tempList ={}
                 result=getVids("https://www.googleapis.com/youtube/v3/videos?part=statistics&id="+idList[i]+"&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU")
                 rdata = makeDict(result)
