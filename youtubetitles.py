@@ -68,7 +68,7 @@ def wordDict(titleList):
                         titleDict[listOfWords[i]] = 1 
 
         return titleDict
-
+#xList = [[x[d],d] for d in x.keys()]
 def countCaps(titleList):
         caps = []
         for i in range(len(titleList)):
