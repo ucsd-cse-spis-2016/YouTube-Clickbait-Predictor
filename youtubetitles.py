@@ -69,6 +69,7 @@ def makeStatsDict(idList, titleList):
                         tempList['Likes'] = (rdata['items'][0]['statistics'][u'likeCount'])
                         tempList['Dislikes'] = (rdata['items'][0]['statistics'][u'dislikeCount'])
                         tempList['Views'] = (rdata['items'][0]['statistics'][u'viewCount'])
+                        tempList['Id'] = (rdata['items'][0]['id'])
 
                         likes = float(rdata['items'][0]['statistics']['likeCount'])
                         dislikes = float(rdata['items'][0]['statistics']['dislikeCount'])
@@ -89,6 +90,7 @@ def makeCBList(statsDict):
 
                 tempList.append(statsDict[titleList[i]]['CBRatio'])
                 tempList.append(titleList[i])
+                tempList.append(statsDict[titleList[i]]['Id'])
                 
                 CBList.append(tempList)
         return CBList
