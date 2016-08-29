@@ -76,7 +76,8 @@ def makeStatsDict(idList, titleList):
                 
                         tempList['CBRatio'] = ((dislikes - likes)/(likes + dislikes)) / views
                         statsDict[titleList[i]] = tempList
-
+                except:
+                        print "No Likes/Dislikes for " + titleList[i]
 
         return statsDict
 
