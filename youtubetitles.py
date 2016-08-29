@@ -65,18 +65,18 @@ def makeStatsDict(idList, titleList):
                 tempList ={}
                 result=getVids("https://www.googleapis.com/youtube/v3/videos?part=statistics&id="+idList[i]+"&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU")
                 rdata = makeDict(result)
+                try:
+                        tempList['Likes'] = (rdata['items'][0]['statistics'][u'likeCount'])
+                        tempList['Dislikes'] = (rdata['items'][0]['statistics'][u'dislikeCount'])
+                        tempList['Views'] = (rdata['items'][0]['statistics'][u'viewCount'])
 
-                tempList['Likes'] = (rdata['items'][0]['statistics']['likeCount'])
-                tempList['Dislikes'] = (rdata['items'][0]['statistics']['dislikeCount'])
-                tempList['Views'] = (rdata['items'][0]['statistics']['viewCount'])
+                        likes = float(rdata['items'][0]['statistics']['likeCount'])
+                        dislikes = float(rdata['items'][0]['statistics']['dislikeCount'])
+                        views = float(rdata['items'][0]['statistics']['viewCount'])
+                
+                        tempList['CBRatio'] = ((dislikes - likes)/(likes + dislikes)) / views
+                        statsDict[titleList[i]] = tempList
 
-                likes = float(rdata['items'][0]['statistics']['likeCount'])
-                dislikes = float(rdata['items'][0]['statistics']['dislikeCount'])
-                views = float(rdata['items'][0]['statistics']['viewCount'])
-                
-                tempList['CBRatio'] = ((dislikes - likes)/(likes + dislikes)) / views
-                
-                statsDict[titleList[i]] = tempList
 
         return statsDict
 
@@ -98,8 +98,9 @@ def makeCBList(statsDict):
 
 print "result = getVids('https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&publishedAfter=2014-06-25T00:00:00Z&publishedBefore=2014-07-01T23:59:59Z&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU')"
 print "rdata = makeDict(result)"
-print "titleList = getTitleList(rdata)"
-print "idList = getVidIds(rdata)"
+print "newData = combineAllRdata(rdata, 5)"
+print "titleList = getAllTitles(newData)"
+print "idList = getAllVidIds(newData)"
 print "statsDict = makeStatsDict(idList, titleList)"
         
 #how to get vid id
