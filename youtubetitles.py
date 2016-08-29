@@ -1,5 +1,6 @@
 import json
 import requests
+from collections import defaultdict
 import pprint #make sure to do pprint.pprint("string") when printing
 
 #https://www.googleapis.com/youtube/v3/search?part=snippet&key=[API_KEY]
@@ -9,8 +10,8 @@ def getVids(link):
         result = requests.get(link)
         return result
 
-linkPt1 = "https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&publishedAfter=2014-06-25T00:00:00Z&"
-linkPt2= "&publishedBefore=2014-07-01T23:59:59Z&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU"
+linkPt1 = "https://www.googleapis.com/youtube/v3/search?part=snippet,id&type=video&"
+linkPt2= "&channelId=UCxJf49T4iTO_jtzWX3rW_jg&maxResults=50&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU"
 def getNextVids(rdata):
         link = linkPt1 + "pageToken=" + str(rdata['nextPageToken']) + linkPt2
         result = getVids(link)
@@ -37,7 +38,7 @@ def makeDict(result):
 
 def getVidIds(rdata):
         ids = []
-        for i in range (50):
+        for i in range (len(rdata['items'])):
                 ids.append(rdata['items'][i]['id']['videoId'])
         return ids
 
@@ -49,9 +50,36 @@ def getAllVidIds(dictList):
 
 def getTitleList(rdata):
         titles = []
-        for i in range (50):
+        for i in range (len(rdata['items'])):
                 titles.append(rdata['items'][i]['snippet']['title'])
         return titles
+
+def wordDict(titleList):
+        titleDict = defaultdict(int)
+        listOfWords = []
+        for i in range(len(titleList)):
+                splitSent = titleList[i].split()
+                listOfWords += splitSent
+
+        for i in range(len(listOfWords)):
+                try:
+                        titleDict[listOfWords[i]] = 1 + titleDict[listOfWords[i]]
+                except:
+                        titleDict[listOfWords[i]] = 1 
+
+        return titleDict
+
+def countCaps(titleList):
+        caps = []
+        for i in range(len(titleList)):
+                percent = 0.0
+                capCount = 0.0
+                for x in range(len(titleList[i])):
+                            if titleList[i][x] == titleList[i][x].upper():
+                               capCount += 1
+                percent = capCount / len(titleList[i])
+                caps.append(percent)
+        return caps
 
 def getAllTitles(dictList):
         titles = []
@@ -98,8 +126,8 @@ def makeCBList(statsDict):
         
 
         
-
-print "result = getVids('https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&publishedAfter=2014-06-25T00:00:00Z&publishedBefore=2014-07-01T23:59:59Z&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU')"
+print "result = getVids('https://www.googleapis.com/youtube/v3/search?part=snippet,id&type=video&channelId=UCxJf49T4iTO_jtzWX3rW_jg&maxResults=50&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU')"
+#print "result = getVids('https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&publishedAfter=2014-06-25T00:00:00Z&publishedBefore=2014-07-01T23:59:59Z&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU')"
 print "rdata = makeDict(result)"
 print "newData = combineAllRdata(rdata, 5)"
 print "titleList = getAllTitles(newData)"
