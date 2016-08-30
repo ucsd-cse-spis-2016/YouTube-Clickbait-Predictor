@@ -141,7 +141,27 @@ def makeCBList(statsDict):
                 
                 CBList.append(tempList)
         return CBList
-                
+
+
+def clickBaitPercentage(title, wordList):
+        percent = 0.0
+        tsum = 0.0
+        words = title.split()
+        for i in range(len(words)):
+                if words[i] == words[i].upper():
+                        tsum += 1
+        percent = tsum/len(words)
+        print percent
+
+        CBWordCount = 0
+        for i in range(len(words)):
+                for w in range(len(wordList)):
+                        if words[i] == wordList[w][1]:
+                                CBWordCount += 1
+        CBPercent = float(CBWordCount)/len(words)
+        print CBPercent
+
+        return percent * CBPercent
         
 
         
