@@ -1,5 +1,6 @@
 import json
 import requests
+import math
 from collections import defaultdict
 import pprint #make sure to do pprint.pprint("string") when printing
 
@@ -167,6 +168,25 @@ def clickBaitPercentage(title, wordList):
         print CBPercent
 
         return percent * CBPercent
+
+
+def tfidf(cBWords, normWords, normTitles):
+        tfidf = []
+        for i in range(len(cBWords)):
+                tempList = []
+                for x in range(len(normWords)):
+                        if cBList[i][1] == normWords[x][1]:
+                                return "stub"
+        return "stub"
+
+
+
+
+
+
+
+
+
         
 cBResult = getVids('https://www.googleapis.com/youtube/v3/search?part=snippet,id&type=video&channelId=UCxJf49T4iTO_jtzWX3rW_jg&maxResults=50&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU')
 cBDict = makeDict(cBResult)
