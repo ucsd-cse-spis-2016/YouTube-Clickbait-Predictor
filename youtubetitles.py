@@ -54,7 +54,7 @@ def getTitleList(rdata):
                 titles.append(rdata['items'][i]['snippet']['title'])
         return titles
 
-def wordDict(titleList):
+def wordList(titleList):
         titleDict = defaultdict(int)
         listOfWords = []
         for i in range(len(titleList)):
@@ -65,10 +65,29 @@ def wordDict(titleList):
                 try:
                         titleDict[listOfWords[i]] = 1 + titleDict[listOfWords[i]]
                 except:
-                        titleDict[listOfWords[i]] = 1 
+                        titleDict[listOfWords[i]] = 1
+        wordList = [[titleDict[d],d] for d in titleDict.keys()]
+        wordList.sort()
+        wordList.reverse()
+        return wordList
 
-        return titleDict
-#xList = [[x[d],d] for d in x.keys()]
+def questCount(wordList):
+        count = 0
+        for i in range(len(wordList)):
+                       for x in range(len(wordList[i][0])):
+                               if wordList[i][0][x] == '?':
+                                       count += 1
+        return count
+      
+def exCount(wordList):
+        count = 0
+        for i in range(len(wordList)):
+                       for x in range(len(wordList[i][0])):
+                               if wordList[i][0][x] == '!':
+                                       ount += 1
+        return count
+
+
 def countCaps(titleList):
         caps = []
         for i in range(len(titleList)):
