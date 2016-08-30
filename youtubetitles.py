@@ -6,19 +6,24 @@ import pprint #make sure to do pprint.pprint("string") when printing
 #https://www.googleapis.com/youtube/v3/search?part=snippet&key=[API_KEY]
 #After getting stuff from API, turns into code and stuff
 
+
+cBPt1 = "https://www.googleapis.com/youtube/v3/search?part=snippet,id&type=video&"
+cBPt2= "&channelId=UCxJf49T4iTO_jtzWX3rW_jg&maxResults=50&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU"
+normPt1 = "https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&publishedAfter=2014-06-25T00:00:00Z&"
+normPt2 = "&publishedBefore=2014-07-01T23:59:59Z&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU"
+
+
 def getVids(link):
         result = requests.get(link)
         return result
 
-linkPt1 = "https://www.googleapis.com/youtube/v3/search?part=snippet,id&type=video&"
-linkPt2= "&channelId=UCxJf49T4iTO_jtzWX3rW_jg&maxResults=50&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU"
-def getNextVids(rdata):
+def getNextVids(rdata, linkPt1, linkPt2):
         link = linkPt1 + "pageToken=" + str(rdata['nextPageToken']) + linkPt2
         result = getVids(link)
         newData = makeDict(result)
         return newData
 
-def combineAllRdata(rdata, numPages):
+def combineAllData(rdata, numPages, linkPt1, linkPt2):
         newData = []
         tempData = {}
         for i in range(numPages):
@@ -26,7 +31,7 @@ def combineAllRdata(rdata, numPages):
                         newData.append(rdata)
                         tempData = rdata
                 else:
-                        tempData = getNextVids(tempData)
+                        tempData = getNextVids(tempData, linkPt1, linkPt2)
                         newData.append(tempData)
         return newData
 
@@ -163,15 +168,21 @@ def clickBaitPercentage(title, wordList):
 
         return percent * CBPercent
         
+cBResult = getVids('https://www.googleapis.com/youtube/v3/search?part=snippet,id&type=video&channelId=UCxJf49T4iTO_jtzWX3rW_jg&maxResults=50&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU')
+cBDict = makeDict(cBResult)
+cBData = combineAllData(cBDict, 8, cBPt1, cBPt2)
+cBTitles = getAllTitles(cBData)
+cBWords = wordList(cBTitles)
 
-        
-print "result = getVids('https://www.googleapis.com/youtube/v3/search?part=snippet,id&type=video&channelId=UCxJf49T4iTO_jtzWX3rW_jg&maxResults=50&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU')"
-#print "result = getVids('https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&publishedAfter=2014-06-25T00:00:00Z&publishedBefore=2014-07-01T23:59:59Z&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU')"
-print "rdata = makeDict(result)"
-print "newData = combineAllRdata(rdata, 5)"
-print "titleList = getAllTitles(newData)"
-print "idList = getAllVidIds(newData)"
-print "statsDict = makeStatsDict(idList, titleList)"
+normResult = getVids('https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&publishedAfter=2014-06-25T00:00:00Z&publishedBefore=2014-07-01T23:59:59Z&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU')
+normDict = makeDict(normResult)
+normData = combineAllData(normDict, 15, normPt1, normPt2)
+normTitles = getAllTitles(normData)
+normWords = wordList(normTitles)
+
+print "cBDict, cBData, cBTitles, cBWords, normDict, normData, normTitles, normWords"
+
+
         
 #how to get vid id
 #rdata['items'][0]['id']['videoId']
