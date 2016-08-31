@@ -106,17 +106,26 @@ def exCount(wordList):
         return count
 
 
-def countCaps(titleList):
-        caps = []
-        for i in range(len(titleList)):
-                percent = 0.0
-                capCount = 0.0
-                for x in range(len(titleList[i])):
-                            if titleList[i][x] == titleList[i][x].upper():
-                               capCount += 1
-                percent = capCount / len(titleList[i])
-                caps.append(percent)
-        return caps
+def countPunct(title):
+        count = 0
+        for i in range(len(title)):
+                puncs = set(string.punctuation)
+                for p in puncs:
+                        if title[i] == p:
+                                count += 1
+        return count
+
+def countCaps(title):
+        '''returns a percentage of the capital characters'''
+        count = 0
+        length = len(title)
+        for i in range(len(title)):
+                if title[i] == title[i].upper() and title[i] != " ":
+                        count += 1
+                if title[i] == " ":
+                        length -= 1
+        percent = float(count) / length
+        return percent
 
 def getAllTitles(dictList):
         titles = []
@@ -183,7 +192,7 @@ def clickBaitPercentage(title, wordList):
 
 
 def tfidf(cBWords, normWords, normTitles):
-        tfidf = []
+        tfidfList = []
         for i in range(len(cBWords)):
                 idf = 0
                 tempList = []
@@ -191,9 +200,9 @@ def tfidf(cBWords, normWords, normTitles):
                         if cBWords[i][1] == normWords[x][1]:
                                 idf = normWords[x][0]
                                 tempList = [cBWords[i][0] * math.log(len(normTitles)/(idf + 1)), cBWords[i][1]]
-                                tfidf.append(tempList)
+                                tfidfList.append(tempList)
                                 
-        return tfidf
+        return tfidfList
 
 def text_to_wordlist(text):
     r = [c for c in text if c not in set(string.punctuation)]
@@ -209,6 +218,8 @@ def feature(datum, wordId):
                 if w in words:
                         feat[wordId[w]] += 1
         feat.append(1)
+        feat.append(countCaps(datum))
+        feat.append(countPunct(datum))
         return feat
 
 def dot(v,w):
@@ -222,16 +233,14 @@ cBDict = makeDict(cBResult)
 cBData = combineAllData(cBDict, 8, cBPt1, cBPt2)
 cBTitles = getAllTitles(cBData)
 
-
 normResult = getVids('https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&publishedAfter=2014-06-25T00:00:00Z&publishedBefore=2014-07-01T23:59:59Z&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU')
 normDict = makeDict(normResult)
 normData = combineAllData(normDict, 15, normPt1, normPt2)
 normTitles = getAllTitles(normData)
 
+
 cBWords = wordList(cBTitles)
 normWords = wordList(normTitles)
-
-
 
 allWordsDict = makeWords(cBTitles + normTitles)
 allWords = [[allWordsDict[w], w] for w in allWordsDict.keys()]
@@ -241,6 +250,7 @@ words = [w[1] for w in allWords[:700]]
 wordId = dict(zip(words, range(700)))
 titleList = cBTitles + normTitles
 X = [feature(d, wordId) for d in titleList]
+y = [1] * len(cBTitles) + [0] * len(normTitles) + [1] + [3]
 
 
 print "Variables: cBDict, cBData, cBTitles, cBWords, normDict, normData, normTitles, normWords"
@@ -259,6 +269,7 @@ print"words = [w[1] for w in allWords[:1500]]"
 print"wordId = dict(zip(words, range(1500)))" 
 print"titleList = cBTitles + normTitles" 
 print"X = [feature(d, wordId) for d in titleList]"
+print "y = [1] * len(cBTitles) + [0] * len(normTitles)"
 
 
 
