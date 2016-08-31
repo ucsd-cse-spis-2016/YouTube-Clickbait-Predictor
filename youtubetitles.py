@@ -1,6 +1,8 @@
 import json
 import requests
 import math
+import string
+import numpy
 from collections import defaultdict
 import pprint #make sure to do pprint.pprint("string") when printing
 
@@ -179,12 +181,21 @@ def tfidf(cBWords, normWords, normTitles):
                                 return "stub"
         return "stub"
 
+def text_to_wordlist(text):
+    r = [c for c in text if c not in set(string.punctuation)]
+    rs = ''.join(r)
+    rs = rs.lower()
+    rs = rs.split()
+    return rs
 
-
-
-
-
-
+def feature(datum, wordId):
+        feat = [0] * len(words)
+        r = text_to_wordlist(datum)
+        for w in r:
+                if w in words:
+                        feat[wordId[w]] += 1
+        feat.append(1)
+        return feat
 
 
         
@@ -200,7 +211,41 @@ normData = combineAllData(normDict, 15, normPt1, normPt2)
 normTitles = getAllTitles(normData)
 normWords = wordList(normTitles)
 
-print "cBDict, cBData, cBTitles, cBWords, normDict, normData, normTitles, normWords"
+newDict = defaultdict(int)
+for w in cBWords:
+	newDict[w[1].lower()] = newDict[w[1].lower()] + w[0]
+
+	
+for w in normWords:
+	newDict[w[1].lower()] = newDict[w[1].lower()] + w[0]
+
+allWords = []
+allWords = [[newDict[w],w] for w in newDict.keys()]
+allWords.sort()
+allWords.reverse()
+words = [w[1] for w in allWords[:1500]]
+wordId = dict(zip(words, range(1500)))
+titleList = cBTitles + normTitles
+X = [feature(d, wordId) for d in titleList]
+
+
+print "Variables: cBDict, cBData, cBTitles, cBWords, normDict, normData, normTitles, normWords"
+
+print "Already ran:" 
+print"newDict = defaultdict(int)" 
+print"for w in cBWords:" 
+print	"newDict[w[1].lower()] = newDict[w[1].lower()] + w[0]"	
+print"for w in normWords:" 
+print	"newDict[w[1].lower()] = newDict[w[1].lower()] + w[0]" 
+print"allWords = []" 
+print"allWords = [[newDict[w],w] for w in newDict.keys()]"
+print"allWords.sort()" 
+print"allWords.reverse()" 
+print"words = [w[1] for w in allWords[:1500]]" 
+print"wordId = dict(zip(words, range(1500)))" 
+print"titleList = cBTitles + normTitles" 
+print"X = [feature(d, wordId) for d in titleList]"
+
 
 
 
