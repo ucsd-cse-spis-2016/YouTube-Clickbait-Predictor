@@ -75,9 +75,19 @@ def wordList(titleList):
                 except:
                         titleDict[listOfWords[i]] = 1
         wordList = [[titleDict[d],d] for d in titleDict.keys()]
+        for i in range(len(wordList)):
+                wordList[i][1] = wordList[i][1].lower()
+        
         wordList.sort()
         wordList.reverse()
         return wordList
+
+def makeWords(titleList):
+        wordCountDict = defaultdict(int)
+        for tl in titleList:
+                for w in text_to_wordlist(tl):
+                        wordCountDict[w] += 1
+        return wordCountDict
 
 def questCount(wordList):
         count = 0
@@ -175,11 +185,15 @@ def clickBaitPercentage(title, wordList):
 def tfidf(cBWords, normWords, normTitles):
         tfidf = []
         for i in range(len(cBWords)):
+                idf = 0
                 tempList = []
                 for x in range(len(normWords)):
-                        if cBList[i][1] == normWords[x][1]:
-                                return "stub"
-        return "stub"
+                        if cBWords[i][1] == normWords[x][1]:
+                                idf = normWords[x][0]
+                                tempList = [cBWords[i][0] * math.log(len(normTitles)/(idf + 1)), cBWords[i][1]]
+                                tfidf.append(tempList)
+                                
+        return tfidf
 
 def text_to_wordlist(text):
     r = [c for c in text if c not in set(string.punctuation)]
@@ -197,34 +211,34 @@ def feature(datum, wordId):
         feat.append(1)
         return feat
 
+def dot(v,w):
+	return sum(v_i*w_i for v_i,w_i in zip(v,w))
+
+
 
         
 cBResult = getVids('https://www.googleapis.com/youtube/v3/search?part=snippet,id&type=video&channelId=UCxJf49T4iTO_jtzWX3rW_jg&maxResults=50&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU')
 cBDict = makeDict(cBResult)
 cBData = combineAllData(cBDict, 8, cBPt1, cBPt2)
 cBTitles = getAllTitles(cBData)
-cBWords = wordList(cBTitles)
+
 
 normResult = getVids('https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&publishedAfter=2014-06-25T00:00:00Z&publishedBefore=2014-07-01T23:59:59Z&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU')
 normDict = makeDict(normResult)
 normData = combineAllData(normDict, 15, normPt1, normPt2)
 normTitles = getAllTitles(normData)
+
+cBWords = wordList(cBTitles)
 normWords = wordList(normTitles)
 
-newDict = defaultdict(int)
-for w in cBWords:
-	newDict[w[1].lower()] = newDict[w[1].lower()] + w[0]
 
-	
-for w in normWords:
-	newDict[w[1].lower()] = newDict[w[1].lower()] + w[0]
 
-allWords = []
-allWords = [[newDict[w],w] for w in newDict.keys()]
+allWordsDict = makeWords(cBTitles + normTitles)
+allWords = [[allWordsDict[w], w] for w in allWordsDict.keys()]
 allWords.sort()
 allWords.reverse()
-words = [w[1] for w in allWords[:1500]]
-wordId = dict(zip(words, range(1500)))
+words = [w[1] for w in allWords[:700]]
+wordId = dict(zip(words, range(700)))
 titleList = cBTitles + normTitles
 X = [feature(d, wordId) for d in titleList]
 
