@@ -5,6 +5,9 @@ import string
 import numpy
 from collections import defaultdict
 import pprint #make sure to do pprint.pprint("string") when printing
+import sklearn
+from sklearn.linear_model import LogisticRegression
+
 
 #https://www.googleapis.com/youtube/v3/search?part=snippet&key=[API_KEY]
 #After getting stuff from API, turns into code and stuff
@@ -111,6 +114,8 @@ def countCaps(title):
         percent = float(count) / length
         return percent
 
+
+
 def getAllTitles(dictList):
         titles = []
         for i in range(len(dictList)):
@@ -185,6 +190,15 @@ def findCBRatio2(link):
 
         return CBRatio
 
+def getAPIfromLink(link):
+        vidId = ""
+        CBRatio = 0
+        for i in range(len(link)):
+                if link[i] == "=":
+                        vidId = link[(i+1):len(link)]
+        APILink = "https://www.googleapis.com/youtube/v3/videos?part=snippet&id=" + vidId + "&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU"
+        return APILink
+
 def makeCBList(statsDict):
         CBList = []
         titleList = statsDict.keys()
@@ -218,7 +232,6 @@ def text_to_wordlist(text):
     rs = rs.split()
     return rs
 
-#should work for putting in a string title
 def feature(datum, wordId):
         feat = [0] * len(words)
         r = text_to_wordlist(datum)
@@ -230,24 +243,30 @@ def feature(datum, wordId):
         feat.append(countPunct(datum))
         return feat
 
-#Will only work for titles that are actually in the database
+
 def feature2(datum, statsList):
         feat = []
+
+        feat.append(len(datum))
         feat.append(countCaps(datum))
         feat.append(countPunct(datum))
         feat.append(findCBRatio(datum, statsList))
         return feat
 
-def feature3(link):
+def feature2a(link):
         feat = []
-        feat.append(countCaps(getTitleList(makeDict(getVids(link)))))
-        feat.append(countPunct(getTitleList(makeDict(getVids(link)))))
+        APIData = getAPIfromLink(link)       
+
+        feat.append(len(getTitleList(makeDict(getVids(APIData)))))
+        feat.append(countCaps(getTitleList(makeDict(getVids(APIData)))))
+        feat.append(countPunct(getTitleList(makeDict(getVids(APIData)))))
         feat.append(findCBRatio2(link))
         return feat
 
-def declareVariables():
-        print "Please wait 2 minutes as the computer thinks."
-               
+print "Type 'begin()' to start the program"
+def begin()
+        print "Please wait for 2 minutes while the data loads."
+                       
         cBResult = getVids('https://www.googleapis.com/youtube/v3/search?part=snippet,id&type=video&channelId=UCxJf49T4iTO_jtzWX3rW_jg&maxResults=50&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU')
         cBDict = makeDict(cBResult)
         cBData = combineAllData(cBDict, 8, cBPt1, cBPt2)
@@ -280,12 +299,30 @@ def declareVariables():
         wordId = dict(zip(words, range(700)))
 
 
-        X = [feature2(d, statsList) for d in titleList]
-        y = [1] * len(cBTitles) + [0] * len(normTitles) 
+        
 
         print "Done"
 
-print "Type 'declareVariables()' to declare variables"
+        def youtubeLink(link):
+                X = [feature(d, wordId) for d in titleList]
+                y = [1] * len(cBTitles) + [0] * len(normTitles)
+                logistic = LogisticRegression()
+                lr = logistic.fit(X, y)
+                return "stub"
+
+        def ownTitle(title):
+                X = [feature2(d, statsList) for d in titleList]
+                y = [1] * len(cBTitles) + [0] * len(normTitles)
+                logistic = LogisticRegression()
+                lr = logistic.fit(X, y)
+
+                titleFeat = feature(title, wordId)
+                return "stub"
+
+
+
+        
+
 
         
 #how to get vid id
