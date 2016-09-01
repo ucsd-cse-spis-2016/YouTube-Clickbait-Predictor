@@ -156,6 +156,32 @@ def makeStatsDict(idList, titleList):
 
         return statsDict
 
+def makeStatsList(idList, titleList):
+        statsDict = {}
+        for i in range(len(idList)):
+                tempList ={}
+                result=getVids("https://www.googleapis.com/youtube/v3/videos?part=statistics&id="+idList[i]+"&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU")
+                rdata = makeDict(result)
+                try:
+                        tempList['Likes'] = (rdata['items'][0]['statistics'][u'likeCount'])
+                        tempList['Dislikes'] = (rdata['items'][0]['statistics'][u'dislikeCount'])
+                        tempList['Views'] = (rdata['items'][0]['statistics'][u'viewCount'])
+                        tempList['Id'] = (rdata['items'][0]['id'])
+
+                        likes = float(rdata['items'][0]['statistics']['likeCount'])
+                        dislikes = float(rdata['items'][0]['statistics']['dislikeCount'])
+                        views = float(rdata['items'][0]['statistics']['viewCount'])
+                
+                        tempList['CBRatio'] = ((dislikes - likes)/(likes + dislikes)) / views
+                        statsDict[titleList[i]] = tempList
+                except:
+                        tempList['CBRatio'] = 0
+
+
+        statsList = [[statsDict['CBRatio'],d] for d in statsDict.keys()]
+
+        return statsList
+
 def makeCBList(statsDict):
         CBList = []
         titleList = statsDict.keys()
@@ -222,6 +248,12 @@ def feature(datum, wordId):
         feat.append(countPunct(datum))
         return feat
 
+def feature2(datum, wordId):
+        feat = []
+        feat.append(countCaps(datum))
+        feat.append(countPunct(datum))
+        return feat
+
 def dot(v,w):
 	return sum(v_i*w_i for v_i,w_i in zip(v,w))
 
@@ -249,8 +281,8 @@ allWords.reverse()
 words = [w[1] for w in allWords[:700]]
 wordId = dict(zip(words, range(700)))
 titleList = cBTitles + normTitles
-X = [feature(d, wordId) for d in titleList]
-y = [1] * len(cBTitles) + [0] * len(normTitles) + [1] + [3]
+X = [feature2(d, wordId) for d in titleList]
+y = [1] * len(cBTitles) + [0] * len(normTitles) 
 
 
 print "Variables: cBDict, cBData, cBTitles, cBWords, normDict, normData, normTitles, normWords"
