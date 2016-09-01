@@ -160,18 +160,30 @@ def makeStatsList(idList, titleList):
         return statsList
 
 def findCBRatio(title, statsList):
+        '''finds CBRatio of title in titleList'''
         for t in statsList:
                 if t[1] == title:
                         return t[0]
 
 def findCBRatio2(link):
+        '''finds CBRatio of any link on youtube'''
         vidId = ""
+        CBRatio = 0
         for i in range(len(link)):
                 if link[i] == "=":
                         vidId = link[(i+1):len(link)]
         result = getVids("https://www.googleapis.com/youtube/v3/videos?part=statistics&id="+vidId+"&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU")
         rdata = makeDict(result)
-        return vidId
+        try:
+                likes = float(rdata['items'][0]['statistics']['likeCount'])
+                dislikes = float(rdata['items'][0]['statistics']['dislikeCount'])
+                views = float(rdata['items'][0]['statistics']['viewCount'])
+
+                CBRatio = ((dislikes - likes)/(likes + dislikes)) / views
+        except:
+                CBRatio = 0
+
+        return CBRatio
 
 def makeCBList(statsDict):
         CBList = []
@@ -219,11 +231,18 @@ def feature(datum, wordId):
         return feat
 
 #Will only work for titles that are actually in the database
-def feature2(datum, statsList, wordId):
+def feature2(datum, statsList):
         feat = []
         feat.append(countCaps(datum))
         feat.append(countPunct(datum))
         feat.append(findCBRatio(datum, statsList))
+        return feat
+
+def feature3(link):
+        feat = []
+        feat.append(countCaps(getTitleList(makeDict(getVids(link)))))
+        feat.append(countPunct(getTitleList(makeDict(getVids(link)))))
+        feat.append(findCBRatio2(link))
         return feat
 
 def declareVariables():
@@ -261,12 +280,12 @@ def declareVariables():
         wordId = dict(zip(words, range(700)))
 
 
-        X = [feature2(d, statsList, wordId) for d in titleList]
+        X = [feature2(d, statsList) for d in titleList]
         y = [1] * len(cBTitles) + [0] * len(normTitles) 
 
         print "Done"
 
-print "Type 'defineVariables()' to declare variables"
+print "Type 'declareVariables()' to declare variables"
 
         
 #how to get vid id
