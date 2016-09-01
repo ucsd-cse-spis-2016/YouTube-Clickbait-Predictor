@@ -254,7 +254,6 @@ normDict = makeDict(normResult)
 normData = combineAllData(normDict, 15, normPt1, normPt2)
 normTitles = getAllTitles(normData)
 
-
 cBWords = wordList(cBTitles)
 normWords = wordList(normTitles)
 
