@@ -141,30 +141,28 @@ def makeStatsDict(idList, titleList):
         return statsDict
 
 def makeStatsList(idList, titleList):
-        statsDict = {}
+        statsList = []
         for i in range(len(idList)):
-                tempList ={}
+                tempList =[]
                 result=getVids("https://www.googleapis.com/youtube/v3/videos?part=statistics&id="+idList[i]+"&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU")
                 rdata = makeDict(result)
                 try:
-                        tempList['Likes'] = (rdata['items'][0]['statistics'][u'likeCount'])
-                        tempList['Dislikes'] = (rdata['items'][0]['statistics'][u'dislikeCount'])
-                        tempList['Views'] = (rdata['items'][0]['statistics'][u'viewCount'])
-                        tempList['Id'] = (rdata['items'][0]['id'])
-
                         likes = float(rdata['items'][0]['statistics']['likeCount'])
                         dislikes = float(rdata['items'][0]['statistics']['dislikeCount'])
                         views = float(rdata['items'][0]['statistics']['viewCount'])
-                
-                        tempList['CBRatio'] = ((dislikes - likes)/(likes + dislikes)) / views
-                        statsDict[titleList[i]] = tempList
+
+                        CBRatio = ((dislikes - likes)/(likes + dislikes)) / views
+                        statsList.append([CBRatio, titleList[i]])
                 except:
-                        tempList['CBRatio'] = 0
-
-
-        statsList = [[statsDict['CBRatio'],d] for d in statsDict.keys()]
+                        CBRatio = 0
+                        statsList.append([CBRatio, titleList[i]])
 
         return statsList
+
+def findCBRatio(title, statsList):
+        for t in statsList:
+                if t[1] == title:
+                        return t[0]
 
 def makeCBList(statsDict):
         CBList = []
@@ -178,28 +176,6 @@ def makeCBList(statsDict):
                 
                 CBList.append(tempList)
         return CBList
-
-
-def clickBaitPercentage(title, wordList):
-        percent = 0.0
-        tsum = 0.0
-        words = title.split()
-        for i in range(len(words)):
-                if words[i] == words[i].upper():
-                        tsum += 1
-        percent = tsum/len(words)
-        print percent
-
-        CBWordCount = 0
-        for i in range(len(words)):
-                for w in range(len(wordList)):
-                        if words[i] == wordList[w][1]:
-                                CBWordCount += 1
-        CBPercent = float(CBWordCount)/len(words)
-        print CBPercent
-
-        return percent * CBPercent
-
 
 def tfidf(cBWords, normWords, normTitles):
         tfidfList = []
@@ -232,10 +208,11 @@ def feature(datum, wordId):
         feat.append(countPunct(datum))
         return feat
 
-def feature2(datum, wordId):
+def feature2(datum, statsList, wordId):
         feat = []
         feat.append(countCaps(datum))
         feat.append(countPunct(datum))
+        feat.append(findCBRatio(datum, statsList))
         return feat
 
 def dot(v,w):
@@ -254,8 +231,19 @@ normDict = makeDict(normResult)
 normData = combineAllData(normDict, 15, normPt1, normPt2)
 normTitles = getAllTitles(normData)
 
+titleList = cBTitles + normTitles
+
 cBWords = wordList(cBTitles)
 normWords = wordList(normTitles)
+
+cBIds = getAllVidIds(cBData)
+normIds = []
+for i in range(15):
+	for x in range(len(normData[i]['items'])):
+		normIds.append(normData[0]['items'][x]['id']['videoId'])
+
+allIds = cBIds + normIds
+statsList = makeStatsList(allIds, titleList)
 
 allWordsDict = makeWords(cBTitles + normTitles)
 allWords = [[allWordsDict[w], w] for w in allWordsDict.keys()]
@@ -264,10 +252,10 @@ allWords.reverse()
 words = [w[1] for w in allWords[:700]]
 wordId = dict(zip(words, range(700)))
 
-titleList = cBTitles + normTitles
 
 
-X = [feature2(d, wordId) for d in titleList]
+
+X = [feature2(d, statsList, wordId) for d in titleList]
 y = [1] * len(cBTitles) + [0] * len(normTitles) 
 
 
