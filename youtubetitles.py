@@ -332,6 +332,8 @@ def begin():
                 elif response == "2":
                         userInput = raw_input('Please type in the link: ')
                         print youtubeVideo(userInput)
+                else:
+                        print "Please enter either 1 or 2."
                 prompts()
         
         prompts()
