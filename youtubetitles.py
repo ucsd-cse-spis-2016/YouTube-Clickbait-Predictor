@@ -164,6 +164,15 @@ def findCBRatio(title, statsList):
                 if t[1] == title:
                         return t[0]
 
+def findCBRatio2(link):
+        vidId = ""
+        for i in range(len(link)):
+                if link[i] == "=":
+                        vidId = link[(i+1):len(link)]
+        result = getVids("https://www.googleapis.com/youtube/v3/videos?part=statistics&id="+vidId+"&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU")
+        rdata = makeDict(result)
+        return vidId
+
 def makeCBList(statsDict):
         CBList = []
         titleList = statsDict.keys()
@@ -197,6 +206,7 @@ def text_to_wordlist(text):
     rs = rs.split()
     return rs
 
+#should work for putting in a string title
 def feature(datum, wordId):
         feat = [0] * len(words)
         r = text_to_wordlist(datum)
@@ -208,6 +218,7 @@ def feature(datum, wordId):
         feat.append(countPunct(datum))
         return feat
 
+#Will only work for titles that are actually in the database
 def feature2(datum, statsList, wordId):
         feat = []
         feat.append(countCaps(datum))
@@ -215,70 +226,47 @@ def feature2(datum, statsList, wordId):
         feat.append(findCBRatio(datum, statsList))
         return feat
 
-def dot(v,w):
-	return sum(v_i*w_i for v_i,w_i in zip(v,w))
+def declareVariables():
+        print "Please wait 2 minutes as the computer thinks."
+               
+        cBResult = getVids('https://www.googleapis.com/youtube/v3/search?part=snippet,id&type=video&channelId=UCxJf49T4iTO_jtzWX3rW_jg&maxResults=50&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU')
+        cBDict = makeDict(cBResult)
+        cBData = combineAllData(cBDict, 8, cBPt1, cBPt2)
+        cBTitles = getAllTitles(cBData)
+
+        normResult = getVids('https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&publishedAfter=2014-06-25T00:00:00Z&publishedBefore=2014-07-01T23:59:59Z&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU')
+        normDict = makeDict(normResult)
+        normData = combineAllData(normDict, 15, normPt1, normPt2)
+        normTitles = getAllTitles(normData)
+
+        titleList = cBTitles + normTitles
+
+        cBWords = wordList(cBTitles)
+        normWords = wordList(normTitles)
+
+        cBIds = getAllVidIds(cBData)
+        normIds = []
+        for i in range(15):
+                for x in range(len(normData[i]['items'])):
+                        normIds.append(normData[0]['items'][x]['id']['videoId'])
+
+        allIds = cBIds + normIds
+        statsList = makeStatsList(allIds, titleList)
+
+        allWordsDict = makeWords(cBTitles + normTitles)
+        allWords = [[allWordsDict[w], w] for w in allWordsDict.keys()]
+        allWords.sort()
+        allWords.reverse()
+        words = [w[1] for w in allWords[:700]]
+        wordId = dict(zip(words, range(700)))
 
 
+        X = [feature2(d, statsList, wordId) for d in titleList]
+        y = [1] * len(cBTitles) + [0] * len(normTitles) 
 
-        
-cBResult = getVids('https://www.googleapis.com/youtube/v3/search?part=snippet,id&type=video&channelId=UCxJf49T4iTO_jtzWX3rW_jg&maxResults=50&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU')
-cBDict = makeDict(cBResult)
-cBData = combineAllData(cBDict, 8, cBPt1, cBPt2)
-cBTitles = getAllTitles(cBData)
+        print "Done"
 
-normResult = getVids('https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&publishedAfter=2014-06-25T00:00:00Z&publishedBefore=2014-07-01T23:59:59Z&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU')
-normDict = makeDict(normResult)
-normData = combineAllData(normDict, 15, normPt1, normPt2)
-normTitles = getAllTitles(normData)
-
-titleList = cBTitles + normTitles
-
-cBWords = wordList(cBTitles)
-normWords = wordList(normTitles)
-
-cBIds = getAllVidIds(cBData)
-normIds = []
-for i in range(15):
-	for x in range(len(normData[i]['items'])):
-		normIds.append(normData[0]['items'][x]['id']['videoId'])
-
-allIds = cBIds + normIds
-statsList = makeStatsList(allIds, titleList)
-
-allWordsDict = makeWords(cBTitles + normTitles)
-allWords = [[allWordsDict[w], w] for w in allWordsDict.keys()]
-allWords.sort()
-allWords.reverse()
-words = [w[1] for w in allWords[:700]]
-wordId = dict(zip(words, range(700)))
-
-
-
-
-X = [feature2(d, statsList, wordId) for d in titleList]
-y = [1] * len(cBTitles) + [0] * len(normTitles) 
-
-
-print "Variables: cBDict, cBData, cBTitles, cBWords, normDict, normData, normTitles, normWords"
-
-print "Already ran:" 
-print"newDict = defaultdict(int)" 
-print"for w in cBWords:" 
-print	"newDict[w[1].lower()] = newDict[w[1].lower()] + w[0]"	
-print"for w in normWords:" 
-print	"newDict[w[1].lower()] = newDict[w[1].lower()] + w[0]" 
-print"allWords = []" 
-print"allWords = [[newDict[w],w] for w in newDict.keys()]"
-print"allWords.sort()" 
-print"allWords.reverse()" 
-print"words = [w[1] for w in allWords[:1500]]" 
-print"wordId = dict(zip(words, range(1500)))" 
-print"titleList = cBTitles + normTitles" 
-print"X = [feature(d, wordId) for d in titleList]"
-print "y = [1] * len(cBTitles) + [0] * len(normTitles)"
-
-
-
+print "Type 'defineVariables()' to declare variables"
 
         
 #how to get vid id
