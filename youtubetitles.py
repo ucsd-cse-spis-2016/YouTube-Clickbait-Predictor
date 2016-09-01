@@ -89,22 +89,6 @@ def makeWords(titleList):
                         wordCountDict[w] += 1
         return wordCountDict
 
-def questCount(wordList):
-        count = 0
-        for i in range(len(wordList)):
-                       for x in range(len(wordList[i][0])):
-                               if wordList[i][0][x] == '?':
-                                       count += 1
-        return count
-      
-def exCount(wordList):
-        count = 0
-        for i in range(len(wordList)):
-                       for x in range(len(wordList[i][0])):
-                               if wordList[i][0][x] == '!':
-                                       ount += 1
-        return count
-
 
 def countPunct(title):
         count = 0
@@ -280,7 +264,10 @@ allWords.sort()
 allWords.reverse()
 words = [w[1] for w in allWords[:700]]
 wordId = dict(zip(words, range(700)))
+
 titleList = cBTitles + normTitles
+
+
 X = [feature2(d, wordId) for d in titleList]
 y = [1] * len(cBTitles) + [0] * len(normTitles) 
 
