@@ -196,6 +196,7 @@ def getAPIfromLink(link):
         for i in range(len(link)):
                 if link[i] == "=":
                         vidId = link[(i+1):len(link)]
+                        break
         APILink = "https://www.googleapis.com/youtube/v3/videos?part=snippet&id=" + vidId + "&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU"
         return APILink
 
@@ -232,39 +233,10 @@ def text_to_wordlist(text):
     rs = rs.split()
     return rs
 
-def feature(datum, wordId):
-        feat = [0] * len(words)
-        r = text_to_wordlist(datum)
-        for w in r:
-                if w in words:
-                        feat[wordId[w]] += 1
-        feat.append(1)
-        feat.append(countCaps(datum))
-        feat.append(countPunct(datum))
-        return feat
 
-
-def feature2(datum, statsList):
-        feat = []
-
-        feat.append(len(datum))
-        feat.append(countCaps(datum))
-        feat.append(countPunct(datum))
-        feat.append(findCBRatio(datum, statsList))
-        return feat
-
-def feature2a(link):
-        feat = []
-        APIData = getAPIfromLink(link)       
-
-        feat.append(len(getTitleList(makeDict(getVids(APIData)))))
-        feat.append(countCaps(getTitleList(makeDict(getVids(APIData)))))
-        feat.append(countPunct(getTitleList(makeDict(getVids(APIData)))))
-        feat.append(findCBRatio2(link))
-        return feat
 
 print "Type 'begin()' to start the program"
-def begin()
+def begin():
         print "Please wait for 2 minutes while the data loads."
                        
         cBResult = getVids('https://www.googleapis.com/youtube/v3/search?part=snippet,id&type=video&channelId=UCxJf49T4iTO_jtzWX3rW_jg&maxResults=50&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU')
@@ -297,32 +269,73 @@ def begin()
         allWords.reverse()
         words = [w[1] for w in allWords[:700]]
         wordId = dict(zip(words, range(700)))
-
-
         
 
         print "Done"
 
-        def youtubeLink(link):
-                X = [feature(d, wordId) for d in titleList]
-                y = [1] * len(cBTitles) + [0] * len(normTitles)
-                logistic = LogisticRegression()
-                lr = logistic.fit(X, y)
-                return "stub"
+        def feature(datum, wordId):
+                feat = [0] * len(words)
+                r = text_to_wordlist(datum)
+                for w in r:
+                        if w in words:
+                                feat[wordId[w]] += 1
+                feat.append(1)
+                feat.append(countCaps(datum))
+                feat.append(countPunct(datum))
+                return feat
 
+
+        def feature2(datum, statsList):
+                feat = []
+
+                feat.append(len(datum))
+                feat.append(countCaps(datum))
+                feat.append(countPunct(datum))
+                feat.append(findCBRatio(datum, statsList))
+                return feat
+
+        def feature2a(link):
+                feat = []
+                APIData = getAPIfromLink(link)       
+
+                feat.append(len(getTitleList(makeDict(getVids(APIData)))))
+                feat.append(countCaps(getTitleList(makeDict(getVids(APIData)))))
+                feat.append(countPunct(getTitleList(makeDict(getVids(APIData)))))
+                feat.append(findCBRatio2(link))
+                return feat
+        
         def ownTitle(title):
-                X = [feature2(d, statsList) for d in titleList]
+                X = [feature(d, wordId) for d in titleList]
                 y = [1] * len(cBTitles) + [0] * len(normTitles)
                 logistic = LogisticRegression()
                 lr = logistic.fit(X, y)
 
                 titleFeat = feature(title, wordId)
-                return "stub"
+                prediction = lr.predict_proba(titleFeat)[0][1] * 100
+                print "The probability that your title is clickbait is: ", prediction, "%"
+                return ""
+        def youtubeVideo(link):
+                X = [feature2(d, statsList) for d in titleList]
+                y = [1] * len(cBTitles) + [0] * len(normTitles)
+                logistic = LogisticRegression()
+                lr = logistic.fit(X, y)
 
-
-
+                titleFeat = feature2a(link)
+                prediction = lr.predict_proba(titleFeat)[0][1] * 100
+                print "The probability that this video is clickbait is: ", prediction, "%"
+                return ""
+        def prompts():
+                response = raw_input("Type 1 to type your own title or type 2 to enter a link: ")
+                if response == "1":
+                        userInput = raw_input('Please type in your title: ')
+                        print ownTitle(userInput)
+                elif response == "2":
+                        userInput = raw_input('Please type in the link: ')
+                        print youtubeVideo(userInput)
+                prompts()
         
-
+        prompts()
+        return ""
 
         
 #how to get vid id
