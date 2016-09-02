@@ -17,40 +17,42 @@ def __init__(self, width=400, height=400):
         self.height = height
         self.words_to_draw = None
         self.image = Image.new('RGBA', [width, height], "#fff")
-	self.imageDraw = ImageDraw.Draw(self.image)
+        self.imageDraw = ImageDraw.Draw(self.image)
 		
 def formatWordList(self, words, values):
-    if not isinstance(words, list):
-	raise ValueError('words should be a list')
+        if not isinstance(words, list):
+                raise ValueError('words should be a list')
 		
-    if not isinstance(values, list):
-	raise ValueError('values should be a list')
+        if not isinstance(values, list):
+                raise ValueError('values should be a list')
 		
-    formattedWords = []
-    count = 0
-    for word in words:
-	    formattedWords.append({"text": word, "weight": values[count]})
-	    count += 1
+        formattedWords = []
+        count = 0
+        for word in words:
+                formattedWords.append({"text": word, "weight": values[count]})
+                count += 1
 		
-    return formattedWords
+        return formattedWords
+
+
 		
 def draw(self, words, imageFilePath=None):
-	self.words = words
-	if imageFilePath is None:
-		imageFilePath = str(uuid.uuid4()) + '.jpg'
-	self.imageFilePath = imageFilePath
+        self.words = words
+        if imageFilePath is None:
+                imageFilePath = str(uuid.uuid4()) + '.jpg'
+        self.imageFilePath = imageFilePath
 		
-	index = 0
-	length = len(self.words)
-	for word in self.words:
+        index = 0
+        length = len(self.words)
+        for word in self.words:
                 if index == length - 1:
-			weight = 0
-		else:
-			weight = self._rescaleWeight(word['weight'], self.words[0]['weight'], self.words[-1]['weight'])
-		self._findCoordinates(index, word['text'], int(weight))
-		index += 1
+                        weight = 0
+                else:
+                        weight = self._rescaleWeight(word['weight'], self.words[0]['weight'], self.words[-1]['weight'])
+                        self._findCoordinates(index, word['text'], int(weight))
+                        index += 1
 	
-	return self._save()
+        return self._save()
 	
 def _rescaleWeight(self, n, maxinum, minimum):
 	scaleMin = 1
@@ -62,7 +64,7 @@ def _rescaleWeight(self, n, maxinum, minimum):
 		
 	weight = round((1.0 * (scaleMax - scaleMin) * (n - minimum)) / (maxinum-minimum))
 		
-		return weight
+	return weight
 	
 def _findCoordinates(self, index, text, weight):
 	angleStep = 0.57
