@@ -213,6 +213,13 @@ def makeCBList(statsDict):
                 CBList.append(tempList)
         return CBList
 
+def countChars(title):
+        count = 0
+        for i in range(len(title)):
+                if title[i] != " ":
+                        count += 1
+        return count
+
 def tfidf(cBWords, normWords, normTitles):
         tfidfList = []
         for i in range(len(cBWords)):
@@ -237,7 +244,7 @@ def text_to_wordlist(text):
 
 print "Type 'begin()' to start the program"
 def begin():
-        print "Please wait for 2 minutes while the data loads."
+        print "Please wait for 3 minutes while the data loads."
                        
         cBResult = getVids('https://www.googleapis.com/youtube/v3/search?part=snippet,id&type=video&channelId=UCxJf49T4iTO_jtzWX3rW_jg&maxResults=50&key=AIzaSyDnYJlcS_O0hzFRVvMdR2CympAqFS4ClLU')
         cBDict = makeDict(cBResult)
@@ -281,6 +288,7 @@ def begin():
                                 feat[wordId[w]] += 1
                 feat.append(1)
                 feat.append(countCaps(datum))
+                feat.append(countChars(datum))
                 feat.append(countPunct(datum))
                 return feat
 
@@ -288,7 +296,7 @@ def begin():
         def feature2(datum, statsList):
                 feat = []
 
-                feat.append(len(datum))
+                feat.append(countChars(datum))
                 feat.append(countCaps(datum))
                 feat.append(countPunct(datum))
                 feat.append(findCBRatio(datum, statsList))
@@ -303,6 +311,8 @@ def begin():
                 feat.append(countPunct(getTitleList(makeDict(getVids(APIData)))))
                 feat.append(findCBRatio2(link))
                 return feat
+ 
+
         
         def ownTitle(title):
                 X = [feature(d, wordId) for d in titleList]
